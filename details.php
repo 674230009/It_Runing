@@ -54,7 +54,7 @@
   <!-- หมวดค่าสมัคร -->
   <div class="card">
     <h2>🏃 ระยะทางและค่าสมัคร</h2>
-    <img src="img/race-info.jpg" alt="Race Information" class="section-img">
+    <img src="img/race-info.jpg" alt="Race Information" class="section-img" onerror="this.style.display='none'">
     <table>
       <tr>
         <th>ระยะทาง</th><th>Early Bird</th><th>ปกติ</th><th>สิ่งที่ได้รับ</th>
@@ -69,7 +69,7 @@
   <!-- หมวดสิ่งที่ได้รับ -->
   <div class="card">
     <h2>🎁 สิ่งที่ผู้สมัครได้รับ</h2>
-    <img src="img/gift-set.jpg" alt="Runner Kit" class="section-img">
+    <img src="img/gift-set.jpg" alt="Runner Kit" class="section-img" onerror="this.style.display='none'">
     <ul>
       <li>เสื้อวิ่ง IT RUN 2026</li>
       <li>Bib หมายเลขประจำตัว</li>
@@ -81,7 +81,7 @@
   <!-- หมวดรางวัล -->
   <div class="card">
     <h2>🏆 รางวัลการแข่งขัน</h2>
-    <img src="img/prizes.jpg" alt="Prizes" class="section-img">
+    <img src="img/prizes.jpg" alt="Prizes" class="section-img" onerror="this.style.display='none'">
     <p>ถ้วยรางวัลแบ่งตามกลุ่มอายุ และประเภทชาย/หญิง</p>
     <ul>
       <li>40 กม. / 25 กม. / 11 กม. → แบ่งอายุ 29-, 30-39, 40-49, 50+</li>
@@ -92,9 +92,9 @@
   <!-- หมวดสถานที่ -->
   <div class="card">
     <h2>📍 สถานที่จัดงาน</h2>
-    <img src="img/location.jpg" alt="Event Location" class="section-img">
+    <img src="img/location.jpg" alt="Event Location" class="section-img" onerror="this.style.display='none'">
     <p>ณ วัดเขารังจันทร์ราม อำเภอเมือง จังหวัดนครสวรรค์</p>
-    <p>วันที่ 22 พฤศจิกายน 2569</p>
+    <p>วันที่ 22 พฤศจิกายน 2569 (2026)</p>
   </div>
 
   <!-- ปุ่มสมัคร -->

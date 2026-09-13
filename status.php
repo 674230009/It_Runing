@@ -4,7 +4,7 @@ include 'it_running_db.php';
 $row = null;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $keyword = $_POST['keyword'];
-    $sql = "SELECT * FROM competitors WHERE Competitor_email = :keyword OR Competitor_phone = :keyword";
+    $sql = "SELECT * FROM competitors WHERE competitor_email = :keyword OR competitor_phone = :keyword OR competitor_id = :keyword";
     $stmt = $conn->prepare($sql);
     $stmt->execute([':keyword' => $keyword]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -75,14 +75,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <?php if ($row): ?>
         <h2 style="color:#28a745;">ข้อมูลผู้สมัคร</h2>
         <table>
-          <tr><td>รหัสผู้สมัคร:</td><td><?= $row['Competitor_id'] ?></td></tr>
-          <tr><td>คำนำหน้า:</td><td><?= $row['Competitor_prefix'] ?></td></tr>
-          <tr><td>ชื่อ-นามสกุล:</td><td><?= $row['Competitor_firstname'] ?> <?= $row['Competitor_lastname'] ?></td></tr>
-          <tr><td>อีเมล:</td><td><?= $row['Competitor_email'] ?></td></tr>
-          <tr><td>เบอร์โทร:</td><td><?= $row['Competitor_phone'] ?></td></tr>
-          <tr><td>สาขา:</td><td><?= $row['major'] ?></td></tr>
-          <tr><td>ไซส์เสื้อ:</td><td><?= $row['shirt_size'] ?></td></tr>
-          <tr><td>วันที่สมัคร:</td><td><?= $row['register_date'] ?></td></tr>
+          <tr><td>รหัสผู้สมัคร:</td><td><?= htmlspecialchars($row['competitor_id'] ?? $row['Competitor_id'] ?? '') ?></td></tr>
+          <tr><td>คำนำหน้า:</td><td><?= htmlspecialchars($row['competitor_prefix'] ?? $row['Competitor_prefix'] ?? '') ?></td></tr>
+          <tr><td>ชื่อ-นามสกุล:</td><td><?= htmlspecialchars(($row['competitor_firstname'] ?? $row['Competitor_firstname'] ?? '') . ' ' . ($row['competitor_lastname'] ?? $row['Competitor_lastname'] ?? '')) ?></td></tr>
+          <tr><td>อีเมล:</td><td><?= htmlspecialchars($row['competitor_email'] ?? $row['Competitor_email'] ?? '') ?></td></tr>
+          <tr><td>เบอร์โทร:</td><td><?= htmlspecialchars($row['competitor_phone'] ?? $row['Competitor_phone'] ?? '') ?></td></tr>
+          <tr><td>คณะ:</td><td><?= htmlspecialchars($row['faculty'] ?? '-') ?></td></tr>
+          <tr><td>สาขา:</td><td><?= htmlspecialchars($row['major'] ?? '-') ?></td></tr>
+          <tr><td>ชั้นปี:</td><td><?= htmlspecialchars($row['study_year'] ?? '-') ?></td></tr>
+          <tr><td>ไซส์เสื้อ:</td><td><?= htmlspecialchars($row['shirt_size'] ?? '') ?></td></tr>
+          <tr><td>วันที่สมัคร:</td><td><?= htmlspecialchars($row['register_date'] ?? '') ?></td></tr>
         </table>
       <?php else: ?>
         <h2 style="color:red;">❌ ไม่พบข้อมูล</h2>

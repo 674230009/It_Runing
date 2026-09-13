@@ -3,7 +3,7 @@ include 'it_running_db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "INSERT INTO competitors 
-            (Competitor_id, Competitor_prefix, Competitor_firstname, Competitor_lastname, Competitor_email, Competitor_phone, faculty, major, study_year, shirt_size) 
+            (competitor_id, competitor_prefix, competitor_firstname, competitor_lastname, competitor_email, competitor_phone, faculty, major, study_year, shirt_size) 
             VALUES (:Competitor_id, :Competitor_prefix, :Competitor_firstname, :Competitor_lastname, :Competitor_email, :Competitor_phone, :faculty, :major, :study_year, :shirt_size)";
     
     $stmt = $conn->prepare($sql);
@@ -23,11 +23,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // ตรวจสอบว่าเลือกเสื้อหรือไม่
     if ($_POST['shirt_size'] != "None") {
         // ถ้าเลือกเสื้อ → ไปหน้าชำระเงิน
-        header("Location: payment.php?id=" . $_POST['Competitor_id']);
+        header("Location: payment.php?id=" . urlencode($_POST['Competitor_id']));
         exit();
     } else {
         // ถ้าไม่เลือกเสื้อ → ไปหน้ายืนยันการสมัครทันที
-        header("Location: confirm.php");
+        header("Location: confirm.php?id=" . urlencode($_POST['Competitor_id']));
         exit();
     }
 }

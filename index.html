@@ -2,13 +2,13 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IT RUN 2026</title>
   <style>
     body { 
         margin:0 auto; 
         font-family: Arial, sans-serif; 
         background:#f9f9f9; 
-                  
     }
 
     header {
@@ -30,24 +30,25 @@
     .banner {
       background:url('img/week.jpeg') center/cover no-repeat;
       height:300px; display:flex; align-items:center; justify-content:center;
-      color:#fff; font-size:2em; font-weight:bold;
+      color:#fff; font-size:2.5em; font-weight:bold;
       text-shadow:2px 2px 6px rgba(0,0,0,0.7);
     }
     .container { 
+        max-width: 900px;
         margin:30px auto; 
         padding:20px; 
     }
 
     .card {
       background:#fff; 
-      padding:20px; 
+      padding:25px; 
       border-radius:8px;
       box-shadow:0 2px 6px rgba(0,0,0,0.1);
       margin-bottom:20px;
     }
     .btn {
-      display:inline-block; padding:10px 15px; border-radius:5px;
-      text-decoration:none; color:#fff; margin:5px;
+      display:inline-block; padding:10px 18px; border-radius:5px;
+      text-decoration:none; color:#fff; margin:5px; font-weight:bold;
     }
     .btn-orange { background:#ff6600; }
     .btn-blue { background:#007bff; }
@@ -64,7 +65,7 @@
   </div>
   <!-- เมนูนำทาง -->
   <nav>
-    <a href="index.php">หน้าหลัก</a>
+    <a href="index.html">หน้าหลัก</a>
     <a href="details.php">รายละเอียด</a>
     <a href="register.php">สมัครวิ่ง</a>
     <a href="status.php">ตรวจสอบสถานะ</a>
@@ -72,7 +73,9 @@
 </header>
 
 <!-- Banner พร้อมข้อความ overlay -->
-<div class="banner"></div>
+<div class="banner">
+  IT RUN 2026
+</div>
 
 <div class="container">
   <div class="card">

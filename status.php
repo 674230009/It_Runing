@@ -66,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <div class="card">
     <h2>กรอกข้อมูลเพื่อตรวจสอบ</h2>
     <form action="status.php" method="POST">
-      <label>กรอกเบอร์โทรหรืออีเมล:</label>
+      <label>กรอกเบอร์โทร อีเมล หรือรหัสผู้สมัคร:</label>
       <input type="text" name="keyword" required>
       <button type="submit">ตรวจสอบ</button>
     </form>

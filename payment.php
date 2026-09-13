@@ -62,8 +62,8 @@ $id = $_GET['id'] ?? null;
     <h2>💳 กรุณาสแกน QR Code เพื่อชำระเงิน</h2>
     <!-- ใส่รูป QR Code ที่คุณมี -->
     <img src="img/ดาวน์โหลด.jpg" alt="QR Code สำหรับชำระเงิน" class="qr">
-    <p>หลังจากชำระเงินแล้ว กดปุ่มด้านล่างเพื่อไปหน้าสถานะ</p>
-    <a href="check_status.php" class="btn btn-green">ยืนยันการชำระเงิน</a>
+    <p>หลังจากชำระเงินแล้ว กดปุ่มด้านล่างเพื่อยืนยันการสมัคร</p>
+    <a href="confirm.php?id=<?= urlencode($id) ?>" class="btn btn-green">ยืนยันการชำระเงิน</a>
     <br><br>
     <a href="index.php" class="btn btn-orange">กลับหน้าหลัก</a>
   </div>

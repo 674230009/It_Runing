@@ -1,13 +1,38 @@
+<?php
+include 'config/it_running_db.php';
+include 'config/helpers.php';
+
+$id = isset($_GET['id']) ? (int) $_GET['id'] : 1;
+$event = get_event($conn, $id);
+
+$distances = [];
+if ($event) {
+    $distances = event_distances($conn, $id);
+    if (!$distances) {
+        $distances = [['distance_label' => 'ระยะทางตามงาน', 'price' => (int) $event['price_min']]];
+    }
+}
+
+function distance_benefits($label)
+{
+    if (preg_match('/(40|42|25|21|11|10\.5)/', $label)) {
+        return 'เสื้อ, Bib, เหรียญ, เสื้อ Finisher';
+    }
+
+    return 'เสื้อ, Bib, เหรียญ';
+}
+?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>รายละเอียดการแข่งขัน IT RUN 2026</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รายละเอียดการแข่งขัน <?= $event ? e($event['title']) : 'IT RUN 2026' ?></title>
   <style>
     body { margin:0; font-family: Arial, sans-serif; background:#f9f9f9; }
     header {
       background:#ff6600; color:#fff; padding:10px 20px;
-      display:flex; justify-content:space-between; align-items:center;
+      display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
     }
     .logo-area { display:flex; align-items:center; }
     .logo-area img { height:50px; margin-right:10px; }
@@ -27,7 +52,14 @@
     th, td { border:1px solid #ddd; padding:8px; text-align:center; }
     th { background:#ff6600; color:#fff; }
     .btn { display:inline-block; margin-top:15px; padding:10px 15px; background:#007bff; color:#fff; border-radius:5px; text-decoration:none; }
+    .btn-green { background:#28a745; }
+    .btn-orange { background:#ff6600; }
     .section-img { width:100%; border-radius:8px; margin-bottom:15px; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+    .meta { color:#555; margin:6px 0; }
+    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:bold; color:#fff; margin-bottom:10px; }
+    .badge-open { background:#28a745; }
+    .badge-closed { background:#dc3545; }
+    .badge-upcoming { background:#007bff; }
   </style>
 </head>
 <body>
@@ -51,59 +83,78 @@
 </div>
 
 <div class="container">
+<?php if ($event): ?>
+  <div class="card">
+    <span class="badge badge-<?= e($event['status']) ?>"><?= e(event_status_label($event['status'])) ?></span>
+    <h2><?= e($event['title']) ?></h2>
+    <p class="meta">📅 <strong>วันที่:</strong> <?= e(thai_date($event['event_date'])) ?></p>
+    <p class="meta">📍 <strong>สถานที่:</strong> <?= e($event['location']) ?> จังหวัด<?= e($event['province']) ?></p>
+    <p class="meta">🏃 <strong>ประเภท:</strong> <?= e($event['distances']) ?></p>
+    <?php if (!empty($event['description'])): ?>
+      <p class="meta"><?= nl2br(e($event['description'])) ?></p>
+    <?php endif; ?>
+    <a href="event.php?id=<?= (int) $event['id'] ?>" class="btn">ดูหน้างานวิ่ง</a>
+  </div>
 
-  <!-- หมวดค่าสมัคร -->
   <div class="card">
     <h2>🏃 ระยะทางและค่าสมัคร</h2>
     <img src="assets/images/race-info.jpg" alt="Race Information" class="section-img" onerror="this.style.display='none'">
     <table>
-      <tr>
-        <th>ระยะทาง</th><th>Early Bird</th><th>ปกติ</th><th>สิ่งที่ได้รับ</th>
-      </tr>
-      <tr><td>40 กม.</td><td>฿1,800</td><td>฿2,000</td><td>เสื้อ, Bib, เหรียญ, เสื้อ Finisher</td></tr>
-      <tr><td>25 กม.</td><td>฿1,400</td><td>฿1,600</td><td>เสื้อ, Bib, เหรียญ, เสื้อ Finisher</td></tr>
-      <tr><td>11 กม.</td><td>฿800</td><td>฿1,000</td><td>เสื้อ, Bib, เหรียญ, เสื้อ Finisher</td></tr>
-      <tr><td>5 กม.</td><td>฿500</td><td>฿600</td><td>เสื้อ, Bib, เหรียญ</td></tr>
+      <tr><th>ระยะทาง</th><th>ค่าสมัคร</th><th>สิ่งที่ได้รับ</th></tr>
+      <?php foreach ($distances as $d): ?>
+        <tr>
+          <td><?= e($d['distance_label']) ?></td>
+          <td>฿<?= number_format((int) $d['price']) ?></td>
+          <td><?= e(distance_benefits($d['distance_label'])) ?></td>
+        </tr>
+      <?php endforeach; ?>
     </table>
   </div>
 
-  <!-- หมวดสิ่งที่ได้รับ -->
   <div class="card">
     <h2>🎁 สิ่งที่ผู้สมัครได้รับ</h2>
     <img src="assets/images/gift-set.jpg" alt="Runner Kit" class="section-img" onerror="this.style.display='none'">
     <ul>
-      <li>เสื้อวิ่ง IT RUN 2026</li>
+      <li>เสื้อวิ่ง<?= e($event['title']) ?></li>
       <li>Bib หมายเลขประจำตัว</li>
       <li>เหรียญที่ระลึก</li>
-      <li>เสื้อ Finisher (เฉพาะผู้เข้าเส้นชัยในระยะ 40, 25, 11 กม.)</li>
+      <li>เสื้อ Finisher (ตามระยะทางที่กำหนด)</li>
     </ul>
   </div>
 
-  <!-- หมวดรางวัล -->
   <div class="card">
     <h2>🏆 รางวัลการแข่งขัน</h2>
     <img src="assets/images/prizes.jpg" alt="Prizes" class="section-img" onerror="this.style.display='none'">
     <p>ถ้วยรางวัลแบ่งตามกลุ่มอายุ และประเภทชาย/หญิง</p>
     <ul>
-      <li>40 กม. / 25 กม. / 11 กม. → แบ่งอายุ 29-, 30-39, 40-49, 50+</li>
-      <li>5 กม. → แบ่งอายุไม่เกิน 15 ปี และ 16 ปีขึ้นไป</li>
+      <li>ระยะไกล (ฮาล์ฟมาราธอนขึ้นไป) → แบ่งอายุ 29-, 30-39, 40-49, 50+</li>
+      <li>ฟันรัน → แบ่งอายุไม่เกิน 15 ปี และ 16 ปีขึ้นไป</li>
     </ul>
   </div>
 
-  <!-- หมวดสถานที่ -->
   <div class="card">
     <h2>📍 สถานที่จัดงาน</h2>
     <img src="assets/images/location.jpg" alt="Event Location" class="section-img" onerror="this.style.display='none'">
-    <p>ณ วัดเขารังจันทร์ราม อำเภอเมือง จังหวัดนครสวรรค์</p>
-    <p>วันที่ 22 พฤศจิกายน 2569 (2026)</p>
+    <p>ณ <?= e($event['location']) ?> จังหวัด<?= e($event['province']) ?></p>
+    <p>วันที่ <?= e(thai_date($event['event_date'])) ?></p>
   </div>
 
-  <!-- ปุ่มสมัคร -->
   <div class="card" style="text-align:center;">
-    <a href="register.php" class="btn">สมัครเลย!</a>
-    <a href="status.php" class="btn" style="background:#28a745;">ตรวจสอบสถานะ</a>
+    <?php if ($event['status'] === 'open'): ?>
+      <a href="register.php?event_id=<?= (int) $event['id'] ?>" class="btn btn-green">สมัครเลย!</a>
+    <?php else: ?>
+      <span class="btn" style="background:#6c757d;"><?= e(event_status_label($event['status'])) ?></span>
+    <?php endif; ?>
+    <a href="calendar.php" class="btn btn-orange">ดูงานวิ่งอื่น</a>
+    <a href="status.php" class="btn">ตรวจสอบสถานะ</a>
   </div>
-
+<?php else: ?>
+  <div class="card" style="text-align:center;">
+    <h2 style="color:#c00;">ไม่พบงานวิ่งนี้</h2>
+    <p>งานวิ่งที่คุณกำลังค้นหาอาจถูกลบหรือไม่มีอยู่ในระบบ</p>
+    <a href="calendar.php" class="btn btn-orange">กลับปฏิทินงานวิ่ง</a>
+  </div>
+<?php endif; ?>
 </div>
 
 </body>

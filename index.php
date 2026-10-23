@@ -3,6 +3,8 @@ include 'config/it_running_db.php';
 include 'config/helpers.php';
 
 $upcoming = $conn->query("SELECT * FROM events WHERE status <> 'closed' ORDER BY event_date ASC LIMIT 3")->fetchAll(PDO::FETCH_ASSOC);
+$featured = get_event($conn, 1);
+$featuredDistances = $featured ? event_distances($conn, 1) : [];
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -91,20 +93,35 @@ $upcoming = $conn->query("SELECT * FROM events WHERE status <> 'closed' ORDER BY
 </div>
 
 <div class="container">
+  <?php if ($featured): ?>
   <div class="card">
-    <h2>📅 รายละเอียดงาน IT RUN 2026</h2>
-    <p><strong>วันที่จัดงาน:</strong> 22 พฤศจิกายน 2026</p>
-    <p><strong>สถานที่:</strong> ณ วัดเขารังจันทร์ราม อำเภอเมือง จังหวัดนครสวรรค์</p>
-    <p><strong>ระยะทาง:</strong> 5 km / 11 km / 25 km / 40 km</p>
-    <p><strong>อัตราค่าสมัคร (Early Bird):</strong> ฿500 / ฿800 / ฿1,400 / ฿1,800</p>
-    <p><strong>เปิดรับสมัครถึง:</strong> 1 พฤศจิกายน 2026</p>
+    <h2>📅 รายละเอียดงาน <?= e($featured['title']) ?></h2>
+    <p><strong>วันที่จัดงาน:</strong> <?= e(thai_date($featured['event_date'])) ?></p>
+    <p><strong>สถานที่:</strong> ณ <?= e($featured['location']) ?> จังหวัด<?= e($featured['province']) ?></p>
+    <p><strong>ระยะทาง:</strong> <?= e($featured['distances']) ?></p>
+    <p>
+      <strong>อัตราค่าสมัคร:</strong>
+      <?php if ($featuredDistances): ?>
+        <?php foreach ($featuredDistances as $d): ?>
+          ฿<?= number_format((int) $d['price']) ?> (<?= e($d['distance_label']) ?>)
+        <?php endforeach; ?>
+      <?php else: ?>
+        ฿<?= number_format((int) $featured['price_min']) ?> - ฿<?= number_format((int) $featured['price_max']) ?>
+      <?php endif; ?>
+    </p>
+    <p><strong>สถานะ:</strong> <?= e(event_status_label($featured['status'])) ?></p>
     <div style="margin-top: 15px;">
-      <a href="details.php" class="btn btn-blue">รายละเอียดและกติกา</a>
-      <a href="register.php" class="btn btn-green">สมัครวิ่ง</a>
+      <a href="details.php?id=<?= (int) $featured['id'] ?>" class="btn btn-blue">รายละเอียดและกติกา</a>
+      <?php if ($featured['status'] === 'open'): ?>
+        <a href="register.php?event_id=<?= (int) $featured['id'] ?>" class="btn btn-green">สมัครวิ่ง</a>
+      <?php else: ?>
+        <span class="btn btn-orange"><?= e(event_status_label($featured['status'])) ?></span>
+      <?php endif; ?>
       <a href="calendar.php" class="btn btn-orange">ปฏิทินงานวิ่ง</a>
       <a href="status.php" class="btn btn-blue">ตรวจสอบสถานะ</a>
     </div>
   </div>
+  <?php endif; ?>
 
   <?php if ($upcoming): ?>
   <div class="card">

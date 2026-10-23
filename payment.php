@@ -1,35 +1,34 @@
 <?php
 include 'config/it_running_db.php';
+include 'config/helpers.php';
 
-$id = $_GET['id'] ?? null;
+$id = trim($_GET['id'] ?? '');
 
-if (!$id) {
-    header("Location: register.php");
+if ($id === '') {
+    header('Location: register.php');
     exit();
 }
 
-$stmt = $conn->prepare("SELECT c.*, e.title AS event_title, e.event_date, e.location, e.province
-                       FROM competitors c
-                       LEFT JOIN events e ON e.id = c.event_id
-                       WHERE c.Competitor_id = :id");
-$stmt->execute([':id' => $id]);
-$competitor = $stmt->fetch(PDO::FETCH_ASSOC);
+$competitor = get_competitor($conn, $id);
 
 if (!$competitor) {
-    header("Location: register.php?error=1");
+    header('Location: status.php?not_found=1');
     exit();
 }
+
+$isPaid = ($competitor['payment_status'] ?? '') === 'paid';
 ?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>ชำระเงิน IT RUN 2026</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ชำระเงิน <?= e($competitor['event_title'] ?? 'IT RUN 2026') ?></title>
   <style>
     body { margin:0; font-family: Arial, sans-serif; background:#f9f9f9; }
     header {
       background:#ff6600; color:#fff; padding:10px 20px;
-      display:flex; justify-content:space-between; align-items:center;
+      display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
     }
     .logo-area { display:flex; align-items:center; }
     .logo-area img { height:50px; margin-right:10px; }
@@ -45,16 +44,21 @@ if (!$competitor) {
     .container { max-width:700px; margin:30px auto; padding:20px; }
     .card { background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); text-align:center; }
     h2 { color:#ff6600; margin-bottom:15px; }
+    .info { text-align:left; max-width:420px; margin:0 auto 10px; }
+    .info p { margin:8px 0; }
     img.qr {
       width:250px; height:auto; margin:20px 0;
       border:1px solid #ddd; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.2);
     }
-    a.btn {
+    .btn {
       display:inline-block; padding:10px 15px; border-radius:5px;
-      text-decoration:none; color:#fff; margin-top:15px;
+      text-decoration:none; color:#fff; margin:5px 3px 0; font-weight:bold;
     }
     .btn-green { background:#28a745; }
     .btn-orange { background:#ff6600; }
+    .btn-blue { background:#007bff; }
+    .notice { padding:10px; border-radius:5px; margin-bottom:15px; }
+    .notice-paid { background:#e8f7ec; color:#1e7e34; border:1px solid #b7e4c7; }
   </style>
 </head>
 <body>
@@ -79,17 +83,32 @@ if (!$competitor) {
 
 <div class="container">
   <div class="card">
+    <?php if ($isPaid): ?>
+      <p class="notice notice-paid">การสมัครนี้ชำระเงินเรียบร้อยแล้ว</p>
+    <?php endif; ?>
+
     <h2>💳 กรุณาสแกน QR Code เพื่อชำระเงิน</h2>
-    <p><strong>งานวิ่ง:</strong> <?= htmlspecialchars($competitor['event_title'] ?? '-') ?></p>
-    <p><strong>ผู้สมัคร:</strong> <?= htmlspecialchars($competitor['Competitor_prefix'] . ' ' . $competitor['Competitor_firstname'] . ' ' . $competitor['Competitor_lastname']) ?></p>
-    <p><strong>ระยะทาง:</strong> <?= htmlspecialchars($competitor['distance_type']) ?></p>
-    <p><strong>ยอดชำระ:</strong> <?= number_format($competitor['amount']) ?> บาท</p>
-    <!-- ใส่รูป QR Code ที่คุณมี -->
+
+    <div class="info">
+      <p><strong>งานวิ่ง:</strong> <?= e($competitor['event_title'] ?? '-') ?></p>
+      <p><strong>รหัสผู้สมัคร:</strong> <?= e($competitor['Competitor_id']) ?></p>
+      <p><strong>ผู้สมัคร:</strong> <?= e(trim(($competitor['Competitor_prefix'] ?? '') . ' ' . ($competitor['Competitor_firstname'] ?? '') . ' ' . ($competitor['Competitor_lastname'] ?? ''))) ?></p>
+      <p><strong>ระยะทาง:</strong> <?= e($competitor['distance_type']) ?></p>
+      <p><strong>ยอดชำระ:</strong> <?= number_format((int) $competitor['amount']) ?> บาท</p>
+      <p><strong>สถานะ:</strong> <?= e(payment_status_label($competitor['payment_status'] ?? '')) ?></p>
+    </div>
+
     <img src="assets/images/ดาวน์โหลด.jpg" alt="QR Code สำหรับชำระเงิน" class="qr">
-    <p>หลังจากชำระเงินแล้ว กดปุ่มด้านล่างเพื่อยืนยันการสมัคร</p>
-    <a href="confirm.php?id=<?= urlencode($id) ?>&paid=1" class="btn btn-green">ยืนยันการชำระเงิน</a>
-    <br><br>
-    <a href="index.php" class="btn btn-orange">กลับหน้าหลัก</a>
+
+    <?php if ($isPaid): ?>
+      <a href="confirm.php?id=<?= urlencode($competitor['Competitor_id']) ?>" class="btn btn-blue">ดูรายละเอียดการสมัคร</a>
+    <?php else: ?>
+      <p>หลังจากชำระเงินแล้ว กดปุ่มด้านล่างเพื่อยืนยันการชำระเงิน</p>
+      <a href="confirm.php?id=<?= urlencode($competitor['Competitor_id']) ?>&paid=1" class="btn btn-green">ยืนยันการชำระเงิน</a>
+    <?php endif; ?>
+    <br>
+    <a href="event.php?id=<?= (int) $competitor['event_id'] ?>" class="btn btn-orange">กลับไปยังงานวิ่ง</a>
+    <a href="status.php" class="btn btn-blue">ตรวจสอบสถานะ</a>
   </div>
 </div>
 

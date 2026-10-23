@@ -124,11 +124,12 @@ if ($event) {
       </table>
 
       <div class="actions">
-        <?php if ($event['status'] === 'closed'): ?>
-          <span class="btn btn-gray">ปิดรับสมัครแล้ว</span>
-        <?php else: ?>
+        <?php if ($event['status'] === 'open'): ?>
           <a href="register.php?event_id=<?= (int) $event['id'] ?>" class="btn btn-green">สมัครงานนี้</a>
+        <?php else: ?>
+          <span class="btn btn-gray"><?= e(event_status_label($event['status'])) ?></span>
         <?php endif; ?>
+        <a href="details.php?id=<?= (int) $event['id'] ?>" class="btn btn-blue">รายละเอียดและกติกา</a>
         <a href="calendar.php" class="btn btn-orange">กลับปฏิทินงานวิ่ง</a>
       </div>
     </div>

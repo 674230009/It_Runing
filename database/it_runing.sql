@@ -1,5 +1,8 @@
+CREATE DATABASE IF NOT EXISTS it_running_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE it_running_db;
+
 CREATE TABLE IF NOT EXISTS events (
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     event_date DATE NOT NULL,
     location VARCHAR(255) NULL,

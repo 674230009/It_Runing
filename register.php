@@ -2,6 +2,10 @@
 include 'config/it_running_db.php';
 include 'config/helpers.php';
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 $eventId = isset($_GET['event_id']) ? (int) $_GET['event_id'] : 1;
 
 $stmt = $conn->prepare("SELECT * FROM events WHERE id = :id");
@@ -13,7 +17,7 @@ if (!$event) {
     exit();
 }
 
-if ($event['status'] === 'closed') {
+if ($event['status'] !== 'open') {
     header("Location: event.php?id=" . $eventId);
     exit();
 }
@@ -22,6 +26,23 @@ $distances = event_distances($conn, $eventId);
 if (!$distances) {
     $distances = [['distance_label' => 'ระยะทางตามงาน', 'price' => (int) $event['price_min']]];
 }
+
+$error = $_GET['error'] ?? '';
+
+$sessionKey = 'competitor_id_' . $eventId;
+$suggestedId = $_SESSION[$sessionKey] ?? '';
+if ($suggestedId === '') {
+    $suggestedId = generate_competitor_id($conn);
+    $_SESSION[$sessionKey] = $suggestedId;
+}
+
+$errorMessages = [
+    'invalid' => 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน',
+    'email' => 'รูปแบบอีเมลไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง',
+    'distance' => 'ระยะทางที่เลือกไม่ถูกต้อง กรุณาเลือกใหม่',
+    'duplicate' => 'ระบบสร้างรหัสใหม่ให้แล้ว กรุณากดยืนยันการสมัครอีกครั้ง',
+    'save' => 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
+];
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -160,8 +181,10 @@ if (!$distances) {
                 📅 <?= e(thai_date($event['event_date'])) ?> &nbsp;|&nbsp;
                 📍 <?= e($event['location']) ?> จ.<?= e($event['province']) ?>
             </p>
-            <?php if (isset($_GET['error'])): ?>
-                <p style="color:#c00; text-align:center;">ไม่สามารถบันทึกข้อมูลได้ อาจมีรหัสผู้สมัครนี้อยู่แล้ว กรุณาลองใหม่</p>
+            <?php if (isset($errorMessages[$error])): ?>
+                <p style="color:#c00; text-align:center; background:#fff3f3; border:1px solid #f5c2c7; border-radius:5px; padding:10px;">
+                    <?= e($errorMessages[$error]) ?>
+                </p>
             <?php endif; ?>
             <p style="text-align:center;">
                 <a href="event.php?id=<?= (int) $event['id'] ?>" style="color:#007bff;">ดูรายละเอียดงานนี้</a>
@@ -171,25 +194,26 @@ if (!$distances) {
             <form action="save_register.php" method="POST">
                 <input type="hidden" name="event_id" value="<?= (int) $event['id'] ?>">
                 <label>รหัสผู้สมัคร:</label>
-                <input type="text" name="Competitor_id" required>
+                <input type="text" name="Competitor_id" value="<?= e($suggestedId) ?>" readonly style="background:#eee; cursor:not-allowed;">
+                <small style="color:#777;">ระบบสร้างรหัสแบบสุ่มให้อัตโนมัติ ไม่สามารถแก้ไขได้</small>
 
                 <label>คำนำหน้า:</label>
-                <input type="text" name="Competitor_prefix" required>
+                <input type="text" name="Competitor_prefix" maxlength="10" placeholder="เช่น นาย / นาง / นางสาว" required>
 
                 <label>ชื่อ:</label>
-                <input type="text" name="Competitor_firstname" required>
+                <input type="text" name="Competitor_firstname" maxlength="50" required>
 
                 <label>นามสกุล:</label>
-                <input type="text" name="Competitor_lastname" required>
+                <input type="text" name="Competitor_lastname" maxlength="50" required>
 
                 <label>อีเมล:</label>
-                <input type="email" name="Competitor_email" required>
+                <input type="email" name="Competitor_email" maxlength="100" required>
 
                 <label>เบอร์โทร:</label>
-                <input type="text" name="Competitor_phone" required>
+                <input type="text" name="Competitor_phone" maxlength="20" required>
 
                 <label>สาขา / คณะ:</label>
-                <input type="text" name="major">
+                <input type="text" name="major" maxlength="100">
 
                 <label>ระยะทาง:</label>
                 <select name="distance_type" required>
